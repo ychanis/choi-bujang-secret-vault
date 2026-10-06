@@ -26,9 +26,10 @@ export default async function handler(request, response) {
     .select('title, content')
     .order('id', { ascending: true });
 
-  if (error) {
-    return response.status(500).json({ error: 'NOTES_LOAD_FAILED' });
-  }
+if (error) {
+  console.error('Supabase notes error:', error.message);
+  return response.status(500).json({ error: 'NOTES_LOAD_FAILED' });
+}
 
   return response.status(200).json({ notes: data });
 }
