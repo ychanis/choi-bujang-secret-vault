@@ -3,15 +3,20 @@
   "framework": null,
   "buildCommand": "npm run build",
   "outputDirectory": "public",
-  "headers": [
+  "routes": [
     {
-      "source": "/",
-      "headers": [
+      "src": "/",
+      "transforms": [
         {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
+          "type": "response.headers",
+          "op": "set",
+          "target": {
+            "key": "X-Content-Type-Options"
+          },
+          "args": "nosniff"
         }
-      ]
+      ],
+      "continue": true
     }
   ]
 }
