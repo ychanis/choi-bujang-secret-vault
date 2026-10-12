@@ -27,18 +27,23 @@ test('all anonymous methods and invalid authorization reject with JSON',async()=
  const {handler}=mock(); for(const method of ['GET','POST','PUT','DELETE']) {const r=await call(handler,method,null,{},['PUT','DELETE'].includes(method)?id:undefined); assert.equal(r.code,401);assert.ok(r.data.error);}
  assert.equal((await call(handler,'GET','invalid')).code,401);
 });
-test('CRUD stores verified owner, isolates list and preserves stage3 single-note gap',async()=>{
- const {handler,rows}=mock();let r=await call(handler,'POST','test-valid',{id,title:'test',body:'value',owner_id:'forged'});assert.equal(r.code,201);assert.equal(rows.get(id).owner_id,owner);
+test('CRUD stores verified owner, isolates list and blocks other owners',async()=>{
+ const {handler,rows}=mock();let r=await call(handler,'POST','test-valid',{id,title:'test',body:'value'});assert.equal(r.code,201);assert.equal(rows.get(id).owner_id,owner);
  assert.deepEqual((await call(handler,'GET','test-valid')).data,[{id,title:'test',body:'value'}]);
  assert.deepEqual((await call(handler,'GET','test-b')).data,[]);
- assert.equal((await call(handler,'PUT','test-b',{title:'changed',body:'updated'},id)).code,200);
+ for (const method of ['GET','PUT','DELETE']) {
+    assert.equal((await call(handler,method,'test-b',{title:'changed',body:'updated'},id)).code,404);
+  }
+  assert.equal((await call(handler,'PUT','test-valid',{title:'changed',body:'updated',owner_id:'forged'},id)).code,400);
+  assert.equal((await call(handler,'POST','test-valid',{title:'bad',body:'',owner_id:'forged'})).code,400);
+  assert.equal((await call(handler,'PUT','test-valid',{title:'changed',body:'updated'},id)).code,200);
  assert.deepEqual((await call(handler,'GET','test-valid',null,id)).data,{id,title:'changed',body:'updated'});
  assert.equal((await call(handler,'DELETE','test-valid',null,id)).code,200);
  assert.equal((await call(handler,'GET','test-valid',null,id)).code,404);
  r=await call(handler,'POST','test-valid',{title:'auto',body:''});assert.match(r.data.id,/^[0-9a-f-]{36}$/);
  assert.equal((await call(handler,'POST','test-valid',{id:'invalid',title:'a',body:''})).code,400);
 });
-test('deployment identity retains stage 3',()=>{
+test('deployment identity reports stage 4',()=>{
  const config=JSON.parse(readFileSync(new URL('../aleph.config.json',import.meta.url)));
- const identity=deploymentIdentity({VERCEL_GIT_PROVIDER:'github',VERCEL_GIT_REPO_OWNER:'ychanis',VERCEL_GIT_REPO_SLUG:'choi-bujang-secret-vault',VERCEL_GIT_COMMIT_SHA:'a'.repeat(40),VERCEL_URL:'choi-bujang-secret-vault-self.vercel.app'},config);assert.equal(identity.step,3);
+ const identity=deploymentIdentity({VERCEL_GIT_PROVIDER:'github',VERCEL_GIT_REPO_OWNER:'ychanis',VERCEL_GIT_REPO_SLUG:'choi-bujang-secret-vault',VERCEL_GIT_COMMIT_SHA:'a'.repeat(40),VERCEL_URL:'choi-bujang-secret-vault-self.vercel.app'},config);assert.equal(identity.step,4);
 });

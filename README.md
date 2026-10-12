@@ -1,4 +1,4 @@
-# BYTE BACK 방어전 — 3단계 저장점
+# BYTE BACK 방어전 — 4단계 저장점
 
 Supabase Auth 이메일·비밀번호 로그인과 로그아웃을 연결하고, 자료 API가 기존 `src/verify-login.mjs`로 인증 토큰을 확인합니다. 비로그인 또는 잘못된 토큰 요청은 메모 없이 JSON 오류로 거부합니다. 비밀번호와 JWT는 공식 SDK에서 처리하며 직접 만들지 않습니다.
 
@@ -30,7 +30,7 @@ Supabase Auth 이메일·비밀번호 로그인과 로그아웃을 연결하고,
 | PUT | /api/notes/:id | `{id,title,body}`; 요청 `{title,body}` |
 | DELETE | /api/notes/:id | `{id}` 또는 404 |
 
-추가 시 owner_id는 서버가 검증한 사용자 ID로 저장합니다. 브라우저의 userId·role·owner_id는 신원으로 사용하지 않습니다. 3단계 요구에 따라 단건 GET·PUT·DELETE의 소유자 검사는 아직 없습니다. B의 타인 메모 접근은 4단계에서 기록하고 차단합니다. 현재 메모는 가상 자료만 사용합니다.
+추가 시 owner_id는 서버가 검증한 사용자 ID로 저장합니다. 브라우저의 userId·role·owner_id는 신원으로 사용하지 않습니다. 단건 GET·PUT·DELETE는 검증된 사용자 ID와 owner_id가 일치하는 행만 허용합니다. 상대 메모는 404 JSON으로 거부하며, 추가·수정 본문의 owner_id 지정은 400으로 거부합니다. 현재 메모는 가상 자료만 사용합니다.
 
 ## 실행과 점검
 
@@ -40,3 +40,11 @@ Supabase Auth 이메일·비밀번호 로그인과 로그아웃을 연결하고,
 - 제출 묶음: 커밋 후 `npm run bundle`
 
 `bundle-notes.json`과 `artifacts/submission.json`은 Git에서 제외합니다. 실제 배포 익명 요청·배포 식별·헤더 결과는 자기 점검이며 심판 판정이 아닙니다. A 로그인 및 실제 DB CRUD는 계정과 DB 설정 후 직접 확인해야 하며, 로컬 모의 DB 검사로 실제 로그인 성공을 주장하지 않습니다.
+
+## 4단계 소유권과 DB 권한
+
+기존 가상 메모 4건을 A 소유로 연결하고 B 시험 메모 1건을 추가했습니다.
+메모 테이블의 PUBLIC·anon·authenticated 권한을 회수한 뒤 authenticated에 SELECT·INSERT·UPDATE·DELETE만 허용했습니다.
+RLS는 SELECT·DELETE의 USING, INSERT의 WITH CHECK, UPDATE의 USING과 WITH CHECK에서 auth.uid()와 owner_id를 비교합니다.
+서버 API는 서버 전용 키를 사용하므로 API에서도 소유자를 별도로 검사합니다.
+사용자가 SQL 적용 후 권한 결과를 확인했습니다. 실제 배포의 A/B CRUD와 상대 메모 거부는 배포 후 확인해야 합니다.
