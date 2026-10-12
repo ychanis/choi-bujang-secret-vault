@@ -1,4 +1,4 @@
-# BYTE BACK 방어전 — 4단계 저장점
+# BYTE BACK 방어전 — 5단계 저장점
 
 Supabase Auth 이메일·비밀번호 로그인과 로그아웃을 연결하고, 자료 API가 기존 `src/verify-login.mjs`로 인증 토큰을 확인합니다. 비로그인 또는 잘못된 토큰 요청은 메모 없이 JSON 오류로 거부합니다. 비밀번호와 JWT는 공식 SDK에서 처리하며 직접 만들지 않습니다.
 
@@ -48,3 +48,18 @@ Supabase Auth 이메일·비밀번호 로그인과 로그아웃을 연결하고,
 RLS는 SELECT·DELETE의 USING, INSERT의 WITH CHECK, UPDATE의 USING과 WITH CHECK에서 auth.uid()와 owner_id를 비교합니다.
 서버 API는 서버 전용 키를 사용하므로 API에서도 소유자를 별도로 검사합니다.
 사용자가 SQL 적용 후 권한 결과를 확인했습니다. 실제 배포의 A/B CRUD와 상대 메모 거부는 배포 후 확인해야 합니다.
+
+## 5단계 자료 요청을 서버 한곳으로 모읍니다
+
+브라우저의 메모 CRUD는 이미 `/api/notes`와 `/api/notes/:id`만 호출합니다. 직접 자료 호출이 없어 화면과 Auth 코드는 변경하지 않았습니다. 서버 전용 키와 로그인·소유자 검사를 유지합니다.
+
+`sql/stage5-notes.sql`은 public.notes만 대상으로 PUBLIC·anon·authenticated의 테이블 권한과 별도 컬럼 권한을 회수합니다. 기존 RLS·소유자·자료와 service_role 권한은 보존합니다. SQL은 준비만 했으며 학습 DB 적용은 사용자가 검토 후 실행해야 합니다.
+
+1. 적용 전 SQL 파일의 권한 확인 SELECT 세 개를 실행해 결과를 보관합니다.
+2. SQL 파일의 BEGIN부터 COMMIT까지 실행하고 같은 SELECT 세 개를 다시 실행합니다. PUBLIC 테이블 권한은 0행, anon·authenticated 테이블 권한은 모두 false, 컬럼 권한은 0행이어야 합니다.
+3. 배포 후 A로 시험 메모를 추가·읽기·수정·삭제합니다. B에서는 A 메모 단건 GET·PUT·DELETE가 404이고, 로그아웃 후 API 요청은 401이어야 합니다. 개발자 도구 Network에서 메모 요청이 서버 API로만 가는지 확인합니다.
+4. originalApiUrl에 공개 키만 사용한 요청, 그리고 공개 키와 로그인 사용자 토큰을 사용한 요청 모두 권한 오류가 나고 메모가 없어야 합니다. 비밀 키는 브라우저에 넣지 않습니다.
+
+`originalApiUrl`은 쿼리 없는 HTTPS 원본 메모 경로입니다. allowedRoutes 다섯 개와 nosniff 헤더 설정을 유지했습니다. 공개 키는 Auth용으로 화면 코드에 남아 있으므로 공개 키 제거 가점은 구현하지 않았습니다.
+
+검사: `npm ci` → `node --test test/stage3.test.mjs` → 저장점 커밋 후 `npm run bundle`. 로컬 모의 DB CRUD 통과는 실제 A/B 로그인 검사나 SQL 적용 완료를 뜻하지 않습니다. 제출 JSON과 설명 파일은 Git에서 제외합니다.

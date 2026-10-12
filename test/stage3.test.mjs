@@ -43,7 +43,7 @@ test('CRUD stores verified owner, isolates list and blocks other owners',async()
  r=await call(handler,'POST','test-valid',{title:'auto',body:''});assert.match(r.data.id,/^[0-9a-f-]{36}$/);
  assert.equal((await call(handler,'POST','test-valid',{id:'invalid',title:'a',body:''})).code,400);
 });
-test('deployment identity reports stage 4',()=>{
+test('deployment identity reports current configured stage',()=>{
  const config=JSON.parse(readFileSync(new URL('../aleph.config.json',import.meta.url)));
- const identity=deploymentIdentity({VERCEL_GIT_PROVIDER:'github',VERCEL_GIT_REPO_OWNER:'ychanis',VERCEL_GIT_REPO_SLUG:'choi-bujang-secret-vault',VERCEL_GIT_COMMIT_SHA:'a'.repeat(40),VERCEL_URL:'choi-bujang-secret-vault-self.vercel.app'},config);assert.equal(identity.step,4);
+ const identity=deploymentIdentity({VERCEL_GIT_PROVIDER:'github',VERCEL_GIT_REPO_OWNER:'ychanis',VERCEL_GIT_REPO_SLUG:'choi-bujang-secret-vault',VERCEL_GIT_COMMIT_SHA:'a'.repeat(40),VERCEL_URL:'choi-bujang-secret-vault-self.vercel.app'},config);assert.equal(identity.step,config.step);
 });
