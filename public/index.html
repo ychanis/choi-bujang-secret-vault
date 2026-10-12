@@ -1,77 +1,8 @@
 <!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BYTE BACK | 점령된 자료실</title>
-  <style>
-    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
-    body { margin: 0; min-height: 100vh; background: #101a28; color: #ecf4ff; }
-    main { max-width: 760px; margin: 0 auto; padding: 44px 22px 64px; }
-    .eyebrow { color: #8ad8df; font-size: 14px; font-weight: 700; letter-spacing: .08em; }
-    h1 { margin: 16px 0; font-size: clamp(30px, 7vw, 48px); line-height: 1.2; }
-    p { font-size: 17px; line-height: 1.7; color: #bfd0e5; }
-    .notice { margin: 26px 0; padding: 18px; border: 1px solid #d07384; border-radius: 14px; color: #ffe3e8; background: #612a3544; }
-    ul { list-style: none; display: grid; gap: 12px; padding: 0; }
-    li { border: 1px solid #51667c; border-radius: 14px; padding: 17px 19px; background: #1a2a3d; }
-    strong { display: block; font-size: 18px; margin-bottom: 5px; }
-    li span { color: #bfd0e5; }
-  </style>
-</head>
-<body>
-  <main>
-    <div class="eyebrow">BYTE BACK · 2단계 자료 분리</div>
-    <h1>점령된 자료실</h1>
-
-    <p>
-      가상 자료를 공개 정적 파일에서 분리하여
-      서버 API를 통해 불러오고 있습니다.
-    </p>
-
-    <div class="notice">
-      자료는 코드 밖으로 옮겼지만 현재 서버 API는 아직 공개 주소입니다.
-      접근 제어는 다음 단계에서 추가합니다.
-    </div>
-
-    <ul id="notes" aria-live="polite">
-      <li>가상 자료를 불러오는 중입니다.</li>
-    </ul>
-  </main>
-
-  <script type="module">
-    const list = document.querySelector('#notes');
-
-    try {
-      const response = await fetch('/api/notes', { cache: 'no-store' });
-
-      if (!response.ok) {
-        throw new Error('공개 자료를 읽을 수 없습니다.');
-      }
-
-      const data = await response.json();
-
-      if (!Array.isArray(data.notes)) {
-        throw new Error('자료 형식이 맞지 않습니다.');
-      }
-
-      list.replaceChildren(
-        ...data.notes.map(note => {
-          const item = document.createElement('li');
-          const title = document.createElement('strong');
-          const content = document.createElement('span');
-
-          title.textContent = note.title;
-          content.textContent = note.content;
-
-          item.append(title, content);
-          return item;
-        })
-      );
-    } catch (error) {
-      const item = document.createElement('li');
-      item.textContent = error.message;
-      list.replaceChildren(item);
-    }
-  </script>
-</body>
-</html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>내 자료실</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef3f8;color:#182536;font-family:system-ui,sans-serif}main{max-width:820px;margin:auto;padding:44px 20px}h1{font-size:36px}section,li{padding:24px;background:white;border:1px solid #d5dfeb;border-radius:16px;margin:16px 0}label{display:block;margin:12px 0 6px}input,textarea{width:100%;padding:12px;border:1px solid #aebccd;border-radius:8px;color:#182536;background:white;font:inherit}textarea{min-height:120px}button{padding:11px 18px;background:#235d9c;color:white;border:0;border-radius:8px;margin:12px 8px 0 0;cursor:pointer;font:inherit}button:disabled{opacity:.5}ul{padding:0;list-style:none}li p{white-space:pre-wrap;overflow-wrap:anywhere}.muted{color:#536477}#message{min-height:24px;color:#9c243c}[hidden]{display:none!important}
+</style></head><body><main><p class="muted">BYTE BACK · 내 자료실</p><h1>내 메모를 안전하게</h1><p id="status">로그인 상태를 확인하고 있어요.</p><p id="message" role="status" aria-live="polite"></p>
+<section id="login"><h2>로그인</h2><form id="login-form"><label for="email">이메일</label><input id="email" type="email" autocomplete="username" required><label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" required><button>로그인</button></form></section>
+<div id="workspace" hidden><button id="logout">로그아웃</button><section><h2 id="editor-heading">메모 추가</h2><form id="editor"><label for="title">제목</label><input id="title" maxlength="200" required><label for="body">내용</label><textarea id="body" maxlength="10000"></textarea><button id="save">저장</button><button id="cancel" type="button">새 메모 작성</button></form></section><h2>내 메모</h2><button id="refresh">새로고침</button><ul id="notes"></ul></div>
+<script type="module" src="/app.js"></script></main></body></html>
