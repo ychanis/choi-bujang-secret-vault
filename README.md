@@ -1,4 +1,4 @@
-# BYTE BACK 방어전 — 5단계 저장점
+# BYTE BACK 방어전 — 6단계 저장점
 
 Supabase Auth 이메일·비밀번호 로그인과 로그아웃을 연결하고, 자료 API가 기존 `src/verify-login.mjs`로 인증 토큰을 확인합니다. 비로그인 또는 잘못된 토큰 요청은 메모 없이 JSON 오류로 거부합니다. 비밀번호와 JWT는 공식 SDK에서 처리하며 직접 만들지 않습니다.
 
@@ -63,3 +63,20 @@ RLS는 SELECT·DELETE의 USING, INSERT의 WITH CHECK, UPDATE의 USING과 WITH CH
 `originalApiUrl`은 쿼리 없는 HTTPS 원본 메모 경로입니다. allowedRoutes 다섯 개와 nosniff 헤더 설정을 유지했습니다. 공개 키는 Auth용으로 화면 코드에 남아 있으므로 공개 키 제거 가점은 구현하지 않았습니다.
 
 검사: `npm ci` → `node --test test/stage3.test.mjs` → 저장점 커밋 후 `npm run bundle`. 로컬 모의 DB CRUD 통과는 실제 A/B 로그인 검사나 SQL 적용 완료를 뜻하지 않습니다. 제출 JSON과 설명 파일은 Git에서 제외합니다.
+
+## 6단계 등록한 기기만 허용
+
+판정기는 운영 엔진이 확인한 request.deviceRegistered가 true일 때만 allow·approved를 반환합니다.
+false이거나 값이 없으면 deny·device_not_registered로 거부합니다.
+구현한 규칙 ID는 device_registered입니다. 응답의 다섯 항목과 기존 로그인·메모 API·화면을 유지합니다.
+인증서, CA, 서명 키, 기기 개인키는 생성하지 않았으며 별도 접속 프로그램 설치는 없습니다.
+
+확인 순서:
+1. npm run decider:test를 실행합니다.
+2. 등록 기기의 정상 요청과 미등록 기기의 가상 요청이 모두 통과하는지 확인합니다.
+3. 미등록 요청은 deny·device_not_registered이며, 등록 여부가 없는 요청도 같은 이유로 거부합니다.
+
+이번 실행에서 등록·미등록 두 가상 요청 검사가 통과했습니다.
+이는 로컬 연습 결과이며 실제 심판 판정이나 실제 기기 접속 확인이 아닙니다.
+기존 배포 화면은 직접 열어 로그인과 본인 메모 조회를 확인합니다.
+저장점 커밋 후 npm run bundle로 제출 묶음을 생성합니다.
