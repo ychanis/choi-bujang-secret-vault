@@ -61,3 +61,11 @@ test('direct notes API rejects query-selected resource before DB read',async()=>
  const r=await call(h,{url:'/api/notes?id='+id,query:{id}});
  assert.equal(r.code,400);assert.equal(reads,0);
 });
+
+test('Vercel matching id query allowed; mismatched id and actions denied',()=>{
+  const url='/api/notes/'+id;
+  assert.deepEqual(parseResourcePath({url:url+'?id='+id,query:{id}},'notes'),{id});
+  assert.equal(parseResourcePath({url:url+'?id=forged',query:{id}},'notes'),null);
+  assert.equal(parseResourcePath({url:url+'?action=export',query:{id}},'notes'),null);
+  assert.equal(parseResourcePath({url:url+'?id='+id+'&id='+id,query:{id}},'notes'),null);
+});
