@@ -1,9 +1,13 @@
+import { checkResourceAccess } from './resource-policy.mjs';
 // 엔진이 검증해 전달한 계약 입력만 사용합니다.
 // 브라우저 헤더를 읽거나 누락된 신호를 정상값으로 채우지 않습니다.
 export const RULE_IDS = Object.freeze([
   'device_registered',
   'input_signal_validation',
   'step_up_required',
+  'resource_scope',
+  'note_api_owner_required',
+  'announcement_read_only',
 ]);
 
 const REQUEST_KEYS = [
@@ -70,6 +74,12 @@ export async function decide(request) {
   }
 
 
+  const resourceAccess = checkResourceAccess(request);
+  if (!resourceAccess.allowed) {
+    // Existing starter deny code; ruleIds identifies the resource policy rejection.
+    return result('deny', 'starter_not_ready', ['resource_scope']);
+  }
+
   // 심판 가상 사건만 검사합니다. 실제 위치 증거로 사용하지 않습니다.
   const signals = request.signals;
   const unusualHour = signals.hour >= 0 && signals.hour < 6;
@@ -92,11 +102,11 @@ export async function decide(request) {
       && confirmation.authAgeSeconds <= 900;
 
     if (confirmed) {
-      return result('allow', 'approved', ['device_registered', 'step_up_required']);
+      return result('allow', 'approved', ['device_registered', 'step_up_required', ...resourceAccess.ruleIds]);
     }
 
     return result('step_up', 'step_up_required', ['step_up_required']);
   }
 
-  return result('allow', 'approved', ['device_registered', 'input_signal_validation']);
+  return result('allow', 'approved', ['device_registered', 'input_signal_validation', ...resourceAccess.ruleIds]);
 }

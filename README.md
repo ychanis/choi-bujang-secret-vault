@@ -1,4 +1,4 @@
-# BYTE BACK 방어전 — 7단계 저장점
+# BYTE BACK 방어전 — 8단계 저장점
 
 Supabase Auth 이메일·비밀번호 로그인과 로그아웃을 연결하고, 자료 API가 기존 `src/verify-login.mjs`로 인증 토큰을 확인합니다. 비로그인 또는 잘못된 토큰 요청은 메모 없이 JSON 오류로 거부합니다. 비밀번호와 JWT는 공식 SDK에서 처리하며 직접 만들지 않습니다.
 
@@ -111,3 +111,31 @@ step_up·step_up_required와 step_up_required 사유를 반환합니다.
 가상 재확인 뒤 허용 분기를 추가했습니다.
 사용자 실행에서 정상·미등록·복합 이상·재확인 뒤 허용 4건이 통과했습니다.
 실제 재로그인 전후 자료 차단 시험은 계속 미실행입니다.
+
+## 8단계 자료마다 갈 수 있는 구역을 나눕니다
+
+메모와 공지를 notes/UUID, announcements/UUID 자원 ID로 구분합니다.
+기존 메모 ID·주소·본문·화면 메뉴와 6·7단계 규칙을 유지합니다.
+
+판정기는 정확한 서비스·메서드·경로와 검증된 주체·기기 입력을 확인합니다.
+알 수 없는 경로, 전체 메모 목록 /notes, 기능 경로와 쿼리 기능 선택을 거부합니다.
+계약에 강사 역할이 없으므로 판정기의 공지 쓰기는 모두 거부합니다.
+기존 /api/notes 목록은 서버의 본인 소유자 필터를 유지합니다.
+
+최종 메모 API는 검증된 사용자와 저장된 owner_id를 대조합니다.
+공지 수정 API는 보호된 vault_roles의 instructor 권한을 확인합니다.
+요청 본문의 role·userId·owner_id로 권한을 부여하지 않습니다.
+거부 로그에는 짧은 이유 코드만 남깁니다.
+
+사용자가 공지·권한 테이블 SQL을 적용했습니다.
+두 테이블의 RLS 활성화, anon·authenticated 읽기·수정 금지,
+service_role 읽기·수정 허용을 사용자 실행 결과로 확인했습니다.
+
+재실행:
+npm run decider:test
+npm run fixture:7
+node --test test/stage3.test.mjs test/stage8-api.test.mjs test/stage8-decider.test.mjs
+
+사용자 실행에서 로컬 검사 16개와 기존 판정기 연습이 통과했습니다.
+실제 배포의 정상 CRUD·상대 메모 거부·학생 공지 수정 거부는 아직 미실행입니다.
+로컬 검사 결과를 실제 심판 판정으로 보고하지 않습니다.
