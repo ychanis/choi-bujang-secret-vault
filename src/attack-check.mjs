@@ -18,12 +18,27 @@ export async function runAttackChecks(config) {
       results.push({ attackId, expected, observed });
     } catch { results.push({ attackId, expected, observed: '배포 요청 실패: 연결 또는 응답을 확인할 수 없음' }); }
   }
-  results.push({ attackId: 'authenticated_crud', expected: '정상 A 로그인 후 추가·수정·삭제, 삭제 후 단건 GET 404', observed: '미실행: 실제 로그인 계정으로 배포 후 직접 확인 필요' });
+  results.push({ attackId: 'authenticated_crud', expected: '정상 A 로그인 후 추가·수정·삭제, 삭제 후 단건 GET 404', observed: '사용자 실제 배포 확인: 로그인·메모 저장·수정·삭제 정상. 삭제 후 단건 GET은 별도 미실행' });
 
   results.push({
     attackId: 'stage7_reauthentication',
     expected: '엔진이 새 로그인 시각을 검증하는 환경에서 확인 전 자료 차단과 새 요청 허용',
     observed: '미실행: 현재 제공 계약에 새 로그인 시각 검증 절차가 명시되지 않음. 가상 사건 판정만 로컬 확인'
   });
+
+  results.push(
+    { attackId: 'stage8_other_note_read',
+      expected: 'B의 A 메모 단건 조회 거부',
+      observed: '사용자 실제 배포 API 확인: GET 404' },
+    { attackId: 'stage8_other_note_update',
+      expected: 'B의 A 메모 수정 거부',
+      observed: '사용자 실제 배포 API 확인: PUT 404' },
+    { attackId: 'stage8_other_note_list',
+      expected: 'B 목록에서 A 메모 제외',
+      observed: '사용자 실제 배포 API 확인: 목록 HTTP 200, A 메모 제외=true' },
+    { attackId: 'stage8_student_announcement',
+      expected: '학생이 본문 역할을 위조해도 공지 수정 거부',
+      observed: '사용자 실제 배포 API 확인: PUT 403, instructor_required' }
+  );
   return results;
 }
