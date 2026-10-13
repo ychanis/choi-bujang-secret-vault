@@ -90,12 +90,12 @@ false이거나 값이 없으면 deny·device_not_registered로 거부합니다.
 
 judge_fixture 가상 사건에서 새벽 0~5시, unusual 네트워크,
 최근 120초 이내 risk_signal 20건 이상이 겹치면
-step_up·step_up_required와 composite_access_check 사유를 반환합니다.
+step_up·step_up_required와 step_up_required 사유를 반환합니다.
 지역 하나만으로 차단하지 않습니다.
 
 사용자 로컬 실행에서 정상 allow, 복합 이상 step_up,
 미등록 기기 deny, 누락·출처 불명·위조 헤더 추가 확인을 확인했습니다.
-stepUp.verified만으로 복합 이상 사건의 추가 확인을 건너뛰지 않습니다.
+가상 복합 이상 사건은 추가 확인 전 step_up이며, 계약 형식의 verified=true와 0~900초 authAgeSeconds가 확인되면 allow입니다.
 
 현재 제공된 계약에는 같은 로그인 주체의 새 로그인 시각을 검증하는
 절차가 명시되어 있지 않습니다.
@@ -105,3 +105,9 @@ stepUp.verified만으로 복합 이상 사건의 추가 확인을 건너뛰지 �
 재실행: npm run decider:test && npm run fixture:7
 정상 사건은 allow, 복합 이상 사건은 step_up이어야 합니다.
 가상 연습 결과는 실제 심판 판정이나 실제 자료 차단 증거가 아닙니다.
+
+### 7단계 심판 피드백 수정
+추가 확인 규칙 이름을 제공 연습 스크립트의 step_up_required에 맞췄습니다.
+가상 재확인 뒤 허용 분기를 추가했습니다.
+사용자 실행에서 정상·미등록·복합 이상·재확인 뒤 허용 4건이 통과했습니다.
+실제 재로그인 전후 자료 차단 시험은 계속 미실행입니다.

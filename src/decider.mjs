@@ -3,7 +3,7 @@
 export const RULE_IDS = Object.freeze([
   'device_registered',
   'input_signal_validation',
-  'composite_access_check',
+  'step_up_required',
 ]);
 
 const REQUEST_KEYS = [
@@ -82,7 +82,20 @@ export async function decide(request) {
 
   if (signals.source === 'judge_fixture'
       && unusualHour && unusualNetwork && burstRead) {
-    return result('step_up', 'step_up_required', ['composite_access_check']);
+
+    // 엔진 계약으로 전달된 가상 재확인 결과만 검사합니다.
+    const confirmation = request.stepUp;
+    const confirmed = exactKeys(confirmation, ['verified', 'authAgeSeconds'])
+      && confirmation.verified === true
+      && Number.isFinite(confirmation.authAgeSeconds)
+      && confirmation.authAgeSeconds >= 0
+      && confirmation.authAgeSeconds <= 900;
+
+    if (confirmed) {
+      return result('allow', 'approved', ['device_registered', 'step_up_required']);
+    }
+
+    return result('step_up', 'step_up_required', ['step_up_required']);
   }
 
   return result('allow', 'approved', ['device_registered', 'input_signal_validation']);
