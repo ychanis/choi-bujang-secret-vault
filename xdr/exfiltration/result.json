@@ -6,61 +6,61 @@
       "alertId": "ex-01",
       "action": "block",
       "confidence": 0.96,
-      "reason": "낯선 목적지 대용량 자료 반출"
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-02",
       "action": "block",
-      "confidence": 0.97,
-      "reason": "업무 시간 외 압축 파일 반출"
+      "confidence": 0.96,
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-03",
       "action": "block",
-      "confidence": 0.94,
-      "reason": "낯선 목적지 대용량 자료 반출"
+      "confidence": 0.96,
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-04",
       "action": "block",
-      "confidence": 0.94,
-      "reason": "낯선 목적지 대용량 자료 반출"
+      "confidence": 0.96,
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-05",
       "action": "block",
-      "confidence": 0.94,
-      "reason": "낯선 목적지 대용량 자료 반출"
+      "confidence": 0.96,
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-06",
       "action": "block",
       "confidence": 0.96,
-      "reason": "낯선 목적지 대용량 자료 반출"
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-07",
       "action": "block",
-      "confidence": 0.94,
-      "reason": "낯선 목적지 대용량 자료 반출"
+      "confidence": 0.96,
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-08",
       "action": "block",
       "confidence": 0.96,
-      "reason": "낯선 목적지 대용량 자료 반출"
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-09",
       "action": "block",
       "confidence": 0.96,
-      "reason": "명령 통로 반복 전송"
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-10",
       "action": "block",
-      "confidence": 0.94,
-      "reason": "낯선 목적지 대용량 자료 반출"
+      "confidence": 0.96,
+      "reason": "대량 자료 반출 및 외부 전송 공격 징후"
     },
     {
       "alertId": "ex-11",
@@ -70,15 +70,15 @@
     },
     {
       "alertId": "ex-12",
-      "action": "record",
-      "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "action": "alert",
+      "confidence": 0.6,
+      "reason": "불확실한 외부 전송 경보"
     },
     {
       "alertId": "ex-13",
-      "action": "record",
-      "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "action": "alert",
+      "confidence": 0.6,
+      "reason": "불확실한 외부 전송 경보"
     },
     {
       "alertId": "ex-14",
@@ -88,27 +88,27 @@
     },
     {
       "alertId": "ex-15",
-      "action": "record",
-      "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "action": "alert",
+      "confidence": 0.6,
+      "reason": "불확실한 외부 전송 경보"
     },
     {
       "alertId": "ex-16",
-      "action": "record",
-      "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "action": "alert",
+      "confidence": 0.6,
+      "reason": "불확실한 외부 전송 경보"
     },
     {
       "alertId": "ex-17",
-      "action": "record",
-      "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "action": "alert",
+      "confidence": 0.6,
+      "reason": "불확실한 외부 전송 경보"
     },
     {
       "alertId": "ex-18",
-      "action": "record",
-      "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "action": "alert",
+      "confidence": 0.6,
+      "reason": "불확실한 외부 전송 경보"
     },
     {
       "alertId": "ex-19",
@@ -126,66 +126,66 @@
       "alertId": "ex-21",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     },
     {
       "alertId": "ex-22",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     },
     {
       "alertId": "ex-23",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     },
     {
       "alertId": "ex-24",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     },
     {
       "alertId": "ex-25",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     },
     {
       "alertId": "ex-26",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     },
     {
       "alertId": "ex-27",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     },
     {
       "alertId": "ex-28",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     },
     {
       "alertId": "ex-29",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     },
     {
       "alertId": "ex-30",
       "action": "record",
       "confidence": 0.1,
-      "reason": "정상 기록: 일치하는 자료 반출 패턴 없음"
+      "reason": "정상 기록: 자료 반출 공격 근거 부족"
     }
   ],
   "counts": {
     "block": 10,
-    "alert": 4,
-    "record": 16
+    "alert": 10,
+    "record": 10
   }
 }

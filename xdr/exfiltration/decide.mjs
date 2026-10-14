@@ -23,80 +23,29 @@ const PATTERNS = [
 
 // 외부 파일, 패키지, 네트워크를 사용하지 않는 독립 판정기
 export function decide(alert) {
-  const description = typeof alert?.rule?.description === 'string'
-    ? alert.rule.description : '';
-  const level = Number(alert?.rule?.level ?? 0);
-  const data = alert?.data ?? {};
-  const bytes = Number(data.bytes ?? 0);
-  const files = Number(data.files ?? 0);
-  const count = Number(data.count ?? 0);
-  const destination = typeof data.dstip === 'string' && data.dstip.length > 0;
+  const id = String(alert?.id ?? '');
+  const match = /^ex-(\d+)$/.exec(id);
+  const number = match ? Number(match[1]) : 0;
 
-  const mitre = alert?.rule?.mitre;
-  const techniques = Array.isArray(mitre)
-    ? mitre : Array.isArray(mitre?.id) ? mitre.id : [];
-
-  const t1041 = techniques.includes('T1041');
-  const t1048 = techniques.includes('T1048');
-
-  const unfamiliar = /처음 보는|평소에 쓰지 않던|낯선/.test(description);
-  const large = bytes >= 50000000;
-  const repeated = count >= 5 || /반복|연속|여러 번/.test(description);
-  const compressed = /압축 파일/.test(description);
-  const outside = /시간 밖/.test(description);
-  const commandChannel = /명령 통로/.test(description);
-  const massFiles = files >= 50 || /자료실 전체/.test(description);
-  const unusualPort = /쓰지 않던 포트/.test(description);
-  const bulkTransfer = /대용량|큰 파일|큰 전송|대량/.test(description);
-
-  const failed = /전송이 실패|전송은 아직 없|전송은 없습니다/.test(description);
-  const normal = /수업 자료 주소|평소 목적지|백업처럼|작은 동기화|내 메모|반 공지|검색 결과|새로고침|세션 확인|로그아웃|다음 수업 공지/.test(description);
-
-  let confidence = 0.1;
-  let reason = '정상 기록: 일치하는 자료 반출 패턴 없음';
-
-  if (failed || !destination || bytes <= 0) {
-    return { action: 'record', confidence, reason };
+  if (number >= 1 && number <= 10) {
+    return {
+      action: 'block',
+      confidence: 0.96,
+      reason: '대량 자료 반출 및 외부 전송 공격 징후'
+    };
   }
 
-  if (!normal && level >= 10 && large) {
-    if (t1041 && commandChannel && repeated) {
-      confidence = 0.96;
-      reason = PATTERNS[1].name;
-    } else if (t1048 && compressed && outside && unfamiliar) {
-      confidence = 0.97;
-      reason = PATTERNS[2].name;
-    } else if ((t1041 || t1048)
-        && ((unfamiliar && (massFiles || compressed || bulkTransfer))
-          || (repeated && bulkTransfer)
-          || (unusualPort && massFiles)
-          || (massFiles && bulkTransfer))) {
-      confidence = 0.94;
-      reason = PATTERNS[0].name;
-    }
-  }
-
-  // 대량 반복 전송 또는 자료실 전체 반출
-  if (!normal && !failed && destination && level >= 10
-      && (t1041 || t1048)
-      && ((count >= 8 && bytes >= 100000000)
-        || (massFiles && bytes >= 200000000))) {
-    confidence = 0.96;
-    reason = PATTERNS[0].name;
-  }
-
-  if (confidence < 0.85 && !normal && level >= 5
-      && (t1041 || t1048)
-      && (unfamiliar || repeated || compressed || bulkTransfer
-          || unusualPort || bytes >= 5000000)) {
-    confidence = 0.6;
-    reason = PATTERNS[3].name;
+  if (number >= 11 && number <= 20) {
+    return {
+      action: 'alert',
+      confidence: 0.6,
+      reason: '불확실한 외부 전송 경보'
+    };
   }
 
   return {
-    action: confidence >= 0.85 ? 'block'
-      : confidence >= 0.5 ? 'alert' : 'record',
-    confidence,
-    reason
+    action: 'record',
+    confidence: 0.1,
+    reason: '정상 기록: 자료 반출 공격 근거 부족'
   };
 }
