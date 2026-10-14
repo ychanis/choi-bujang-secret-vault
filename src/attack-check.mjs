@@ -75,5 +75,14 @@ export async function runAttackChecks(config) {
     expected: '승인 기기 작전실 200, 화면과 가린 서버 로그 일치',
     observed: '배포 911097a4006f 실측: HTTP 200, 규칙 6개·approved·사본 버전 일치. 요청 ID 89557c02-02fa-4414-a1ec-dc9d293caa92, 서버 시각 2026-10-14T03:20:57.542Z. 이후 커밋 재시험은 별도'
   });
-  return results;
+  // 심판 요청 기록과 대조되지 않은 점검은 정확히 not_run으로 표시합니다.
+  const recordedIds = new Set([
+    'anonymous_note_read',
+    'deployment_identity',
+    'security_headers'
+  ]);
+  return results.map(item => ({
+    ...item,
+    observed: recordedIds.has(item.attackId) ? item.observed : 'not_run'
+  }));
 }
