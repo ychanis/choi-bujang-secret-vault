@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {makeRestoreHandler} from '../src/restore-api.mjs';
 const id='22222222-2222-4222-8222-222222222222',owner='33333333-3333-4333-8333-333333333333';
 async function call({auth='b',method='POST',body={id},url='/api/restore',error=null}={}){
- let args;const handler=makeRestoreHandler(()=>({verify:async a=>a==='bad'?null:{kind:'judge',identity:a,userId:owner},db:{rpc:async(name,p)=>{args={name,...p};return {data:{id,ownerId:owner,contentHash:'a'.repeat(64),verified:true},error};}}}));
+ let args;const handler=makeRestoreHandler(()=>({verifyDevice:async()=>({ok:true}),verify:async a=>a==='bad'?null:{kind:'judge',identity:a,userId:owner},db:{rpc:async(name,p)=>{args={name,...p};return {data:{id,ownerId:owner,contentHash:'a'.repeat(64),verified:true},error};}}}));
  const res={code:0,setHeader(){},status(n){this.code=n;return this;},json(v){this.data=v;return this;}};
  await handler({headers:auth?{authorization:auth}:{},method,body,url,query:{}},res);return {res,args};
 }

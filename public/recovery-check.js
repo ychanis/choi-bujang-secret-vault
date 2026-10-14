@@ -1,11 +1,9 @@
-import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
+import {auth} from './session.js';
+import {secureApi} from './device-client.js';
 export async function runRecoveryCheck(){
- if(!confirm('시험 계정 B로 로그인했나요? 새 가상 메모 한 건을 만들고 변조·삭제·복구 시험을 합니다.'))return;
- const auth=createClient('https://mzxveixvhwsvkdzzjdoc.supabase.co','sb_publishable_Hdzt8NX91jem3oNeeQCprg_w0SWJIZ9');
+ if(!confirm('승인된 시험 계정 B인가요? 새 가상 메모 한 건으로 복구 시험을 합니다.'))return;
  const {data,error}=await auth.auth.getSession();if(error||!data.session)throw new Error('B 로그인이 필요합니다.');
- const request=async(path,method='GET',body)=>{
- const r=await fetch(path,{method,cache:'no-store',headers:{Authorization:`Bearer ${data.session.access_token}`,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
- const result=await r.json();if(!r.ok)throw new Error(`HTTP ${r.status}: ${result.error??'failed'}`);return result;};
+ const request=secureApi;
  const ensure=(ok,label)=>{if(!ok)throw new Error(label+' 실패');console.log('통과 · '+label);};
  const id=crypto.randomUUID(),original={id,title:'10단계 B 복원 시험',body:'복구 확인용 가상 자료'};
  const before=await request('/api/notes');

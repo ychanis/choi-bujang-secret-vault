@@ -1,3 +1,4 @@
+import { makeDeviceVerifier, requireDevice } from './device-proof.mjs';
 import { parseResourcePath, rejectResource } from './api-resource-path.mjs';
 import { resourceId } from './resource-id.mjs';
 import { randomUUID } from 'node:crypto';
@@ -12,7 +13,7 @@ function getRuntime() {
     const key = process.env.SUPABASE_SECRET_KEY;
     const db = createClient(new URL(config.identityProvider.issuer).origin, key,
       { auth: { persistSession: false, autoRefreshToken: false } });
-    runtime = { db, verify: createLoginVerifier({ config, supabaseSecretKey: key }) };
+    runtime = { db, verify: createLoginVerifier({ config, supabaseSecretKey: key }), verifyDevice:makeDeviceVerifier({db,origin:new URL(config.publicAppUrl).origin}) };
   }
   return runtime;
 }
@@ -23,9 +24,10 @@ export function makeNotesHandler(get = getRuntime) {
     const auth = req.headers?.authorization;
     if (!auth) return res.status(401).json({ error: '로그인이 필요합니다.' });
     try {
-      const { db, verify } = get();
+      const { db, verify, verifyDevice } = get();
       const identity = await verify(auth);
       if (!identity) return res.status(401).json({ error: '로그인 인증에 실패했습니다.' });
+      if (!await requireDevice(req,res,identity,verifyDevice)) return;
       const target = parseResourcePath(req, 'notes');
       if (!target) return rejectResource(res, 400, 'invalid_resource_path', '허용된 자료 경로가 아닙니다.');
       const { id } = target;

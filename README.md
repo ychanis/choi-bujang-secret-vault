@@ -1,4 +1,4 @@
-# BYTE BACK 방어전 — 10단계 저장점
+# BYTE BACK 방어전 — 11단계 저장점
 
 Supabase Auth 이메일·비밀번호 로그인과 로그아웃을 연결하고, 자료 API가 기존 `src/verify-login.mjs`로 인증 토큰을 확인합니다. 비로그인 또는 잘못된 토큰 요청은 메모 없이 JSON 오류로 거부합니다. 비밀번호와 JWT는 공식 SDK에서 처리하며 직접 만들지 않습니다.
 
@@ -235,3 +235,63 @@ B 새 가상 메모의 사전 사본 검증, 변조 복구, 삭제 복구, 기�
 복구 후 B의 A 메모 조회와 복구 요청은 각각 404였습니다.
 이후 판정기 4건, 7단계 연습, 탐지 6건이 통과했습니다.
 이 결과는 실제 운영 정책 복원이나 1~9단계 전체 배포 재시험 완료를 뜻하지 않습니다.
+
+
+## 11단계 접속 앱과 기기 승인
+
+기존 public 화면에 manifest, PNG 아이콘(192/512), 설치 안내와 오프라인 안내를 붙였습니다.
+설치 여부를 기기 승인으로 사용하지 않습니다. 서비스 워커에는 공개 오프라인 안내만 보관하고
+로그인 토큰, 메모, API 응답은 캐시하지 않습니다.
+
+Supabase Auth의 persistSession=false와 detectSessionInUrl=false를 적용했습니다.
+이 자료실이 이전에 저장한 SDK 로그인 세션 항목만 제거하고, 다른 사이트/작업의 저장소는 지우지 않습니다.
+기기 개인키는 WebCrypto의 비추출 CryptoKey로 현재 화면 메모리에만 둡니다.
+페이지를 다시 열면 재로그인과 재승인이 필요합니다. 영구적인 관리 기기 증명을 구현한 것은 아닙니다.
+
+POST /api/device는 로그인 검증 후 공개키를 pending 상태로 등록합니다.
+브라우저 버튼은 승인하지 않으며, 관리자가 Supabase SQL Editor에서 화면의 기기 지문을 대조하고 승인합니다.
+서비스용 DB 역할은 승인 행을 UPDATE할 권한이 없고, anon/authenticated는 기기·nonce 테이블과 함수에 접근할 수 없습니다.
+GET /api/device?id=기기지문은 본인 승인 상태만 반환하며 보호 메모를 반환하지 않습니다.
+
+메모·공지·복원 API는 기존 인증 후 기기 승인과 ECDSA P-256 서명을 검증하고 기존 자료 처리로 진행합니다.
+서명은 배포 origin, 로그인 토큰의 SHA-256, 기기 지문, 메서드, 실제 요청 경로와 쿼리,
+정렬한 JSON 본문 SHA-256, 시각, 일회용 UUID를 묶습니다.
+서명 없음, 서명 뒤 경로/본문 변경, 계정 변경, 만료/회수 기기, 재사용 요청은 거부합니다.
+nonce 기록은 승인 상태를 다시 검사한 DB 함수에서 원자적으로 수행하며 장애 시 허용하지 않습니다.
+
+### DB 설정과 직접 확인
+
+1. Supabase SQL Editor에서 sql/stage11-devices.sql을 적용합니다. 메모·복구 사본·기존 감사 기록은 변경하지 않습니다.
+2. 배포 후 로그인 → 기기 승인 요청. 보호 메모가 없어야 하며 화면에 공개 기기 지문이 표시됩니다.
+3. 관리자가 해당 지문을 직접 대조하고 아래 승인 SQL의 지문만 교체하여 실행합니다.
+4. 같은 화면에서 승인 결과 확인 → 서명된 메모 요청의 성공을 확인한 뒤 기존 자료실이 열립니다.
+5. 기존 메모의 추가·조회·수정·삭제, 상대 메모 차단, 공지 권한, 복원 기능을 재확인합니다.
+
+```sql
+UPDATE public.vault_devices
+SET status='approved', approved_at=now(), expires_at=now()+interval '8 hours'
+WHERE id='화면에서 확인한 64자리 기기 지문' AND status='pending'
+RETURNING id,status,expires_at;
+```
+
+회수는 관리자가 같은 지문에 status='revoked'를 설정합니다. 다음 보호 요청에서 거부됩니다.
+새 탭/새로고침 후 새로운 지문을 승인할 때 이전 지문의 권한을 회수할 수 있습니다.
+다른 기기/사용자를 일괄 승인하거나 회수하지 않습니다.
+
+### 검증 상태
+
+로컬 실행: npm ci 후 아래 API/서명 검사 29건 통과, 기존 판정기 4건·7단계 연습·탐지 6건 통과.
+브라우저 화면 검사는 별도 기록하며, DB SQL 적용과 실제 배포의 승인 전후 확인은 아직 미실행입니다.
+로컬 결과를 운영 심판 통과로 주장하지 않습니다. 운영 엔진의 별도 서명/승인 계약과 호환됨을 확인하지 않았습니다.
+현재 자료실의 자체 기기 승인 및 서명 계약은 docs/STAGE11_DEVICE.md에 기록합니다.
+판정기 요청 18개 이름과 응답 5개 이름, judgeIssuer, 기존 RULE_IDS는 변경하지 않습니다.
+
+재실행:
+`node --test test/stage11-device.test.mjs test/stage3.test.mjs test/stage8-api.test.mjs test/stage8-decider.test.mjs test/stage10-restore.test.mjs`
+`npm run decider:test && npm run fixture:7 && npm run detect:test`
+저장점은 DB/배포 확인 후 README 상태를 갱신하고 「11단계 저장점」으로 커밋한 뒤 npm run bundle로 생성합니다.
+
+### 11단계 사용자 실행 기록
+사용자 PC에서 로컬 검사 29건이 모두 통과했습니다.
+사용자가 Supabase 기기 승인 테이블·검증 함수 SQL 적용 성공을 확인했습니다.
+실제 배포의 승인 전후 화면과 심판 판정은 아직 확인 전입니다.

@@ -24,28 +24,28 @@ async function call(handler,{method='GET',url='/api/announcements/'+id,body,auth
 }
 const verifier=async a=>a==='valid'?{kind:'student',userId:'fixture-user'}:null;
 test('anonymous and invalid tokens cannot read announcements',async()=>{
- const m=dbMock();const h=makeAnnouncementsHandler(()=>({db:m.db,verify:verifier}));
+ const m=dbMock();const h=makeAnnouncementsHandler(()=>({verifyDevice:async()=>({ok:true}),db:m.db,verify:verifier}));
  for(const auth of [null,'invalid'])assert.equal((await call(h,{auth})).code,401);
 });
 test('student forged body role cannot modify announcement; stored content remains',async()=>{
  for(const role of ['student',null]){
-  const m=dbMock(role),h=makeAnnouncementsHandler(()=>({db:m.db,verify:verifier}));
+  const m=dbMock(role),h=makeAnnouncementsHandler(()=>({verifyDevice:async()=>({ok:true}),db:m.db,verify:verifier}));
   const r=await call(h,{method:'PUT',body:{title:'forged',body:'changed',role:'instructor'}});
   assert.equal(r.code,403);assert.equal(m.row.content,'original');assert.equal(m.writes.length,0);
  }
 });
 test('database instructor can modify; body cannot assign ownership or role',async()=>{
- const m=dbMock('instructor'),h=makeAnnouncementsHandler(()=>({db:m.db,verify:verifier}));
+ const m=dbMock('instructor'),h=makeAnnouncementsHandler(()=>({verifyDevice:async()=>({ok:true}),db:m.db,verify:verifier}));
  assert.equal((await call(h,{method:'PUT',body:{title:'new',body:'updated',role:'instructor'}})).code,400);
  const r=await call(h,{method:'PUT',body:{title:'new',body:'updated'}});
  assert.equal(r.code,200);assert.equal(r.data.resourceId,'announcements/'+id);assert.equal(m.row.content,'updated');
 });
 test('judge A/B test identity is not an instructor',async()=>{
- const m=dbMock('instructor'),h=makeAnnouncementsHandler(()=>({db:m.db,verify:async()=>({kind:'judge',userId:'fixture-user',identity:'a'})}));
+ const m=dbMock('instructor'),h=makeAnnouncementsHandler(()=>({verifyDevice:async()=>({ok:true}),db:m.db,verify:async()=>({kind:'judge',userId:'fixture-user',identity:'a'})}));
  assert.equal((await call(h,{method:'PUT',body:{title:'new',body:'bad'}})).code,403);assert.equal(m.writes.length,0);
 });
 test('DB role lookup failures never allow a write',async()=>{
- const m=dbMock('instructor',true),h=makeAnnouncementsHandler(()=>({db:m.db,verify:verifier}));
+ const m=dbMock('instructor',true),h=makeAnnouncementsHandler(()=>({verifyDevice:async()=>({ok:true}),db:m.db,verify:verifier}));
  assert.equal((await call(h,{method:'PUT',body:{title:'new',body:'bad'}})).code,500);assert.equal(m.writes.length,0);
 });
 test('exact path only: query actions, query id override, export and traversal denied',()=>{
@@ -57,7 +57,7 @@ test('exact path only: query actions, query id override, export and traversal de
 });
 test('direct notes API rejects query-selected resource before DB read',async()=>{
  let reads=0;
- const h=makeNotesHandler(()=>({db:{from(){reads++;throw new Error('must not read');}},verify:verifier}));
+ const h=makeNotesHandler(()=>({verifyDevice:async()=>({ok:true}),db:{from(){reads++;throw new Error('must not read');}},verify:verifier}));
  const r=await call(h,{url:'/api/notes?id='+id,query:{id}});
  assert.equal(r.code,400);assert.equal(reads,0);
 });

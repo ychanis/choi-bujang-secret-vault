@@ -17,7 +17,7 @@ function mock() {
       return Promise.resolve(resolve({ data: single ? data[0] ?? null : data, error: null }));
     } }; return q;
   } };
-  return { rows, handler: makeNotesHandler(() => ({ db, verify: async a => a === 'test-valid' ? {userId:owner} : a === 'test-b' ? {userId:'33333333-3333-4333-8333-333333333333'} : null })) };
+  return { rows, handler: makeNotesHandler(() => ({ db, verifyDevice:async()=>({ok:true}), verify: async a => a === 'test-valid' ? {userId:owner} : a === 'test-b' ? {userId:'33333333-3333-4333-8333-333333333333'} : null })) };
 }
 async function call(handler, method, auth, body, noteId) {
   const res = { code: 0, headers: {}, setHeader(k,v) {this.headers[k]=v;}, status(c) {this.code=c;return this;}, json(data) {this.data=data;return this;} };

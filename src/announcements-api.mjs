@@ -1,3 +1,4 @@
+import { makeDeviceVerifier, requireDevice } from './device-proof.mjs';
 import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 import { createLoginVerifier } from './verify-login.mjs';
@@ -12,6 +13,7 @@ function getRuntime() {
       db: createClient(new URL(config.identityProvider.issuer).origin, key, {auth:{persistSession:false,autoRefreshToken:false}}),
       verify: createLoginVerifier({config,supabaseSecretKey:key})
     };
+    runtime.verifyDevice=makeDeviceVerifier({db:runtime.db,origin:new URL(config.publicAppUrl).origin});
   }
   return runtime;
 }
@@ -21,9 +23,10 @@ export function makeAnnouncementsHandler(get = getRuntime) {
     res.setHeader('Cache-Control','no-store');
     if (!req.headers?.authorization) return rejectResource(res,401,'login_required','로그인이 필요합니다.');
     try {
-      const {db,verify}=get();
+      const {db,verify,verifyDevice}=get();
       const identity=await verify(req.headers.authorization);
       if (!identity) return rejectResource(res,401,'invalid_login','로그인 인증에 실패했습니다.');
+      if (!await requireDevice(req,res,identity,verifyDevice)) return;
       const target=parseResourcePath(req,'announcements');
       if (!target) return rejectResource(res,400,'invalid_resource_path','허용된 자료 경로가 아닙니다.');
       const {id}=target;
