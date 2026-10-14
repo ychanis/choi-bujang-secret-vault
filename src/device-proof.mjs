@@ -32,6 +32,15 @@ export function proofMessage({origin, token, deviceId, method, path, bodyHash, a
   return ['vault.device.v1', origin, sha256(token), deviceId, method, path, bodyHash, at, nonce].join('\n');
 }
 
+// Vercel can append the matched dynamic id to the internal request URL.
+// Only a single, identical id on the same UUID resource is equivalent.
+function routingEquivalentPath(req) {
+  const match = /^(\/api\/(?:notes|announcements)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))\?id=([0-9a-f-]{36})$/i.exec(req.url);
+  if (!match || match[2] !== match[3] || req.query?.id !== match[2]
+      || Object.keys(req.query).length !== 1) return req.url;
+  return match[1];
+}
+
 export function makeDeviceVerifier({db, origin, clock = Date.now}) {
   return async (req, identity) => {
     try {
@@ -59,9 +68,12 @@ export function makeDeviceVerifier({db, origin, clock = Date.now}) {
       const bytes = Buffer.from(signature,'base64url');
       if (bytes.length !== 64 || bytes.toString('base64url') !== signature)
         return {ok:false, code:'invalid_device_signature'};
-      const signed = proofMessage({origin, token:h.authorization.slice(7), deviceId,
-        method:req.method, path:req.url, bodyHash:sha256(encoded), at, nonce});
-      if (!verifySignature('sha256', Buffer.from(signed), {key, dsaEncoding:'ieee-p1363'}, bytes))
+      const matches = path => verifySignature('sha256', Buffer.from(proofMessage({
+        origin, token:h.authorization.slice(7), deviceId, method:req.method,
+        path, bodyHash:sha256(encoded), at, nonce,
+      })), {key, dsaEncoding:'ieee-p1363'}, bytes);
+      const equivalentPath = routingEquivalentPath(req);
+      if (!matches(req.url) && (equivalentPath === req.url || !matches(equivalentPath)))
         return {ok:false, code:'invalid_device_signature'};
       // The DB rechecks approval while atomically consuming this request nonce.
       const {data: consumed, error: consumeError} = await db.rpc('vault_consume_device_nonce', {

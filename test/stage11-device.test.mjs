@@ -136,3 +136,29 @@ test('기기 검증기를 빠뜨린 서버 구성은 기본 거부',async()=>{
   const f=fixture(),r=await call(makeNotesHandler(()=>({db:f.db,verify:async()=>({userId:owner})})),f.request());
   assert.equal(r.code,403);assert.equal(f.resourceReads,0);
 });
+
+test('Vercel 내부의 동일 id 쿼리 추가에 정상 단건 GET·PUT·DELETE 서명 유지',async()=>{
+ const f=fixture(),handler=makeNotesHandler(f.runtime);
+ f.rows.set(noteId,{api_id:noteId,owner_id:owner,title:'original',content:'before'});
+ for(const method of ['GET','PUT','DELETE']){
+  const r=f.request({method,url:'/api/notes/'+noteId,...(method==='PUT'?{body:{title:'updated',body:'after'}}:{})});
+  r.url+='?id='+noteId;
+  const res=await call(handler,r);assert.equal(res.code,200);
+  if(method==='PUT')assert.equal(f.rows.get(noteId).content,'after');
+ }
+ assert.equal(f.rows.has(noteId),false);
+});
+test('잘못된·중복·추가 쿼리와 다른 UUID 경로는 라우팅 보정으로 우회 불가',async()=>{
+ const f=fixture(),handler=makeNotesHandler(f.runtime);
+ for(const query of ['id='+other,'id='+noteId+'&id='+noteId,'id='+noteId+'&action=export','role=instructor']){
+  const r=f.request({url:'/api/notes/'+noteId});r.url+='?'+query;
+  assert.equal((await call(handler,r)).code,403);
+ }
+ const r=f.request({url:'/api/notes/'+noteId});r.url='/api/notes/'+other+'?id='+other;r.query={id:other};
+ assert.equal((await call(handler,r)).code,403);assert.equal(f.resourceReads,0);
+});
+test('Vercel 경로 보정 뒤에도 서명 후 수정 본문 변경은 거부',async()=>{
+ const f=fixture(),r=f.request({method:'PUT',url:'/api/notes/'+noteId,body:{title:'original',body:'before'}});
+ r.url+='?id='+noteId;r.body.body='forged';
+ assert.equal((await call(makeNotesHandler(f.runtime),r)).code,403);assert.equal(f.resourceReads,0);
+});
