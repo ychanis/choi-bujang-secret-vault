@@ -505,3 +505,30 @@ decideWithXdr는 서버/엔진이 확인한 IP와 기존 판정 함수를 별도
 
 재실행: `node xdr/persistence/read-alerts.mjs` → `npm run xdr:run -- persistence` → `node xdr/persistence/respond.mjs`.
 제출 result.json은 xdr:run으로 재생성합니다.
+
+## 보너스 xdr-05 — 권한 가로채기 탐지
+
+원본 Wazuh 경보 26건과 기존 판정기 규칙을 보존합니다.
+T1068(취약점 악용 권한 상승), T1078(정상 계정 악용)의 공식 설명을 근거로 관리자 그룹 이상 변경과 낯선 관리자 권한 사용을 복합 검사합니다.
+그룹 추가·업무 밖 시간·높은 수준·기법 태그 하나만으로 공격을 확정하지 않습니다.
+T1068 태그나 관리자 명령만으로 실제 취약점 악용을 입증하지 않으며 수치·한글 신호는 수업용 정책입니다.
+patterns.json을 decide.mjs 맨 위 상수에 동일하게 내장했습니다.
+decide는 import·파일 접근·네트워크 없이 계산하며 0.85 이상 block, 0.5 이상 alert, 나머지 record입니다.
+별도 read-alerts는 26줄을 추출하고 비밀값 의심 설명을 숨깁니다.
+
+로컬 실행: block 9 / alert 8 / record 9 / 정상 이벤트 차단 0.
+respond는 계정과 출발 주소 쌍 8개에 처리 시점부터 15분 임시 거부 규칙을 만들고 근거 경보 번호를 붙입니다.
+같은 쌍에서 정상 또는 애매한 경보가 확인되면 그 쌍은 차단하지 않습니다.
+다른 주소에서 같은 계정으로 들어오는 정상 요청이나 같은 주소의 다른 계정은 차단하지 않습니다.
+알림은 xdr/alerts.log에 시각·경보 번호·판단만 남깁니다. 임시 규칙과 로그는 커밋하지 않습니다.
+
+26건 분류와 연결, 만료 해제, 정상 쌍 보호, 기존 거부 보존, 승인 작업 기록, 비밀값 숨김,
+패턴 상수 일치·독립 판단을 검사했습니다. 기존 판정기 연습 4건과 실행기 검사 3건도 통과했습니다.
+기존 계약에는 Wazuh 계정과 주체 ID의 검증된 매핑 및 출발 주소가 없어 실제 운영 연결은 미연결입니다.
+decideWithXdr는 서버/엔진이 검증한 trustedAccount와 trustedSourceIp 및 기존 판정 함수를 별도로 받습니다.
+브라우저 입력이나 subjectId를 Wazuh 계정으로 임의 해석하지 않습니다.
+이 연결은 임시 접근 거부 부품이며 실제 토큰 폐기·운영 세션 회수·배포 차단·심판 통과 증거가 아닙니다.
+운영 적용에는 신뢰할 수 있는 계정 매핑·주소 전달·추가 규칙 ID 호환 검증이 필요합니다.
+
+재실행: `node xdr/privilege/read-alerts.mjs` → `npm run xdr:run -- privilege` → `node xdr/privilege/respond.mjs`.
+제출 result.json은 xdr:run으로 재생성합니다.
