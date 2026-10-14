@@ -51,5 +51,23 @@ export async function runAttackChecks(config) {
     {attackId:'stage11_body_tamper',expected:'서명 뒤 수정 본문 변경 403, 기존 자료 보존',observed:'로컬 서명/API 검사 통과. 실제 배포는 미실행'},
     {attackId:'stage11_approval_flow',expected:'pending에 자료 없음, 관리자 승인 후 서명된 기존 CRUD 정상',observed:'사용자 실제 배포 확인: B 기기 승인 후 기존 메모 조회·추가·수정·삭제 정상'}
   );
+
+  {
+    const expected = '무인증 작전실 요청 401, 요약 정보 없음';
+    let observed;
+    try {
+      const response = await fetch(new URL('/api/operations', config.publicAppUrl), {
+        redirect: 'error', signal: AbortSignal.timeout(10000)
+      });
+      let data;
+      try { data = await response.json(); } catch { data = null; }
+      const summaryPresent = !!data && ['rules','detection','revocation','recovery']
+        .some(key => Object.hasOwn(data,key));
+      observed = `HTTP ${response.status}, JSON 오류=${!!data?.error}, 요약 포함=${summaryPresent}, 요청 ID=${response.headers.get('x-request-id') || '미제공'}, 확인 시각=${new Date().toISOString()}`;
+    } catch {
+      observed = '미확인: 실제 배포 요청 실패';
+    }
+    results.push({attackId: 'stage12_operations_anonymous', expected, observed});
+  }
   return results;
 }

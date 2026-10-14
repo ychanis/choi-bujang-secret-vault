@@ -8,4 +8,12 @@
 <section id="login"><h2>로그인</h2><form id="login-form"><label for="email">이메일</label><input id="email" type="email" autocomplete="username" required><label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" required><button>로그인</button></form></section>
 <div id="workspace" hidden><button id="logout">로그아웃</button><section><h2 id="editor-heading">메모 추가</h2><form id="editor"><label for="title">제목</label><input id="title" maxlength="200" required><label for="body">내용</label><textarea id="body" maxlength="10000"></textarea><button id="save">저장</button><button id="cancel" type="button">새 메모 작성</button></form></section><h2>내 메모</h2><button id="refresh">새로고침</button><ul id="notes"></ul></div>
 <script type="module" src="/app-shell.js"></script>
-<script type="module" src="/app.js"></script></main></body></html>
+<script type="module" src="/app.js"></script>
+<section id="operations" hidden aria-labelledby="operations-heading">
+<h2 id="operations-heading">탈환 작전실</h2>
+<p class="muted">로그인과 기기 승인 후 서버 요약을 조회하세요. 표시 문구는 심판 통과 증거가 아닙니다. 메모 본문은 표시하지 않습니다.</p>
+<button id="operations-refresh" type="button">작전실 새로고침</button>
+<div id="operations-output" role="status" aria-live="polite"></div>
+</section>
+<script type="module" src="/operations.js"></script>
+</main></body></html>
