@@ -69,5 +69,11 @@ export async function runAttackChecks(config) {
     }
     results.push({attackId: 'stage12_operations_anonymous', expected, observed});
   }
+
+  results.push({
+    attackId: 'stage12_operations_authenticated',
+    expected: '승인 기기 작전실 200, 화면과 가린 서버 로그 일치',
+    observed: '배포 911097a4006f 실측: HTTP 200, 규칙 6개·approved·사본 버전 일치. 요청 ID 89557c02-02fa-4414-a1ec-dc9d293caa92, 서버 시각 2026-10-14T03:20:57.542Z. 이후 커밋 재시험은 별도'
+  });
   return results;
 }
