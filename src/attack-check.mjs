@@ -49,7 +49,7 @@ export async function runAttackChecks(config) {
     {attackId:'stage11_unsigned_request',expected:'서명 없는 보호 요청 403, 보호 자료 없음',observed:'로컬 서명/API 검사 통과. 실제 배포는 미실행'},
     {attackId:'stage11_path_tamper',expected:'서명 뒤 경로·쿼리·메서드 변경 403, 자료 처리 없음',observed:'로컬 서명/API 검사 통과. 실제 배포는 미실행'},
     {attackId:'stage11_body_tamper',expected:'서명 뒤 수정 본문 변경 403, 기존 자료 보존',observed:'로컬 서명/API 검사 통과. 실제 배포는 미실행'},
-    {attackId:'stage11_approval_flow',expected:'pending에 자료 없음, 관리자 승인 후 서명된 기존 CRUD 정상',observed:'로컬 승인/CRUD 검사 통과. 실제 DB 승인·배포 화면은 미실행'}
+    {attackId:'stage11_approval_flow',expected:'pending에 자료 없음, 관리자 승인 후 서명된 기존 CRUD 정상',observed:'사용자 실제 배포 확인: B 기기 승인 후 기존 메모 조회·추가·수정·삭제 정상'}
   );
   return results;
 }
