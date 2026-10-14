@@ -1,0 +1,17 @@
+[
+  {
+    "name": "unsigned-service",
+    "condition": "서비스 등록·실행 파일 변경 + 서명 없음 + 임시 실행 파일 또는 반복 등록 + 수준 10 이상",
+    "evidence": "MITRE T1543: 서비스 생성·변경을 통한 지속 실행. https://attack.mitre.org/techniques/T1543/"
+  },
+  {
+    "name": "unfamiliar-task",
+    "condition": "예약 작업 + 임시 실행 파일 + 낯선 이름·비정상 시각·시작 항목 연계 + 수준 10 이상",
+    "evidence": "MITRE T1053: 예약 작업을 통한 지속 실행. https://attack.mitre.org/techniques/T1053/"
+  },
+  {
+    "name": "unlisted-startup",
+    "condition": "시작 폴더 경로 + 평소 목록 밖 프로그램 추가 + 수준 10 이상",
+    "evidence": "MITRE T1547.001: 시작 폴더 자동 실행; T1543과 구분한다. https://attack.mitre.org/techniques/T1547/001/"
+  }
+]
