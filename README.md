@@ -450,3 +450,33 @@ decideWithXdr는 서버/엔진이 검증한 출발 IP와 기존 판정 함수를
 
 재실행: `node xdr/web-injection/read-alerts.mjs` → `npm run xdr:run -- web-injection` → `node xdr/web-injection/respond.mjs`.
 심판용 result.json은 xdr:run으로 재생성합니다. 운영 연결 및 실제 배포 차단 확인은 별도입니다.
+
+
+## 보너스 xdr-03 — 알려진 취약점 악용 탐지
+
+수업용 Wazuh 경보 24건을 사용하며 원본과 기존 ZTNA 규칙을 보존합니다.
+CVE-2021-44228(NVD) 및 MITRE ATT&CK T1190을 근거로 요청 머리글·인자의 완전한 JNDI 원격 조회 구문을 검사합니다.
+근거: https://nvd.nist.gov/vuln/detail/CVE-2021-44228 및 https://attack.mitre.org/techniques/T1190/.
+완전한 구문은 confidence 0.95로 block, 불완전 구문·점검 도구 흔적·T1190 수준 5 이상 단독 경보는 0.55로 alert, 그 외는 0.1로 record입니다.
+수치는 연습용 정책이며 CVE·MITRE가 지정한 차단 기준이 아닙니다. 단순 CVE 이름·jndi 단어만으로 차단하지 않습니다.
+패턴 목록을 decide.mjs 맨 위 상수에 동일하게 내장했습니다. 판단 파일은 import·파일 접근·네트워크 없이 계산합니다.
+read-alerts는 별도 확인용이며 시각·주소·가상 계정·수준·설명 24줄만 추출하고 비밀값 의심 설명을 숨깁니다.
+
+로컬 실행: block 8 / alert 8 / record 8 / 정상 이벤트 차단 0.
+respond는 명확한 공격 주소 7개에 처리 시점부터 15분짜리 임시 거부 규칙과 근거 경보 번호를 생성합니다.
+정상·애매한 요청이 함께 확인된 주소는 주소 단위 차단에서 제외합니다.
+알림은 xdr/alerts.log에 경보 번호·판단·시각만 기록하며 요청 원문·토큰·메모 본문은 쓰지 않습니다.
+생성되는 deny-rules.json과 alerts.log는 커밋하지 않습니다.
+
+로컬 연결 검사: 24건의 공격 거부/애매·정상 통과, 만료 해제, 기존 거부 유지,
+URL 인코딩 및 머리글 탐지, 불완전 구문 알림, 단순 이름 검색 기록,
+비밀값 숨김, 같은 주소의 정상 요청 보존을 확인했습니다.
+기존 판정기 연습 4건과 XDR 실행기 검사 3건도 통과했습니다.
+이는 실제 배포 차단이나 심판 판정이 아닙니다.
+기존 요청 계약에 출발 IP가 없어 운영 연결은 미연결입니다.
+decideWithXdr는 서버/엔진이 검증한 출발 IP와 기존 판정 함수를 별도로 받는 연결 부품입니다.
+기존 판정 함수·규칙 파일은 변경하지 않았으며 운영 적용에는 신뢰할 수 있는 IP 전달과 규칙 ID 호환 확인이 필요합니다.
+취약한 라이브러리 조사·패치 작업은 이 탐지 모듈의 구현 범위에 포함하지 않습니다.
+
+재실행: `node xdr/known-cve/read-alerts.mjs` → `npm run xdr:run -- known-cve` → `node xdr/known-cve/respond.mjs`.
+제출 result.json은 xdr:run으로 다시 생성하며 심판은 decide.mjs 한 파일을 별도로 실행합니다.

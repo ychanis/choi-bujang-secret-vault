@@ -1,0 +1,12 @@
+[
+  {
+    "name": "log4shell_remote_lookup",
+    "condition": "요청 머리글·인자에 완전한 ${jndi:ldap/ldaps/rmi/dns://호스트/…} 조회 구문; URL 인코딩도 확인",
+    "evidence": "CVE-2021-44228: 공격자가 제어하는 로그 입력의 JNDI 원격 조회 악용 형태. https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+  },
+  {
+    "name": "incomplete_lookup_or_scanner",
+    "condition": "잘린 JNDI 조회 또는 log4j-scan/log4shell-scanner 표식, 또는 T1190 수준 5 이상 경보; 알림만",
+    "evidence": "MITRE ATT&CK T1190: 공개 앱 취약점 악용 시도 관련 신호이며 도구명·CVE 이름만으로 공격을 확정하지 않음. https://attack.mitre.org/techniques/T1190/"
+  }
+]
