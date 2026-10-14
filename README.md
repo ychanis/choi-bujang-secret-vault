@@ -532,3 +532,23 @@ decideWithXdr는 서버/엔진이 검증한 trustedAccount와 trustedSourceIp �
 
 재실행: `node xdr/privilege/read-alerts.mjs` → `npm run xdr:run -- privilege` → `node xdr/privilege/respond.mjs`.
 제출 result.json은 xdr:run으로 재생성합니다.
+
+## 보너스 XDR-06 — 자료 빼돌리기 탐지
+
+- MITRE ATT&CK T1041 / T1048 기반 외부 전송 탐지
+- 대용량 반출 및 반복 전송 탐지
+- 명확한 공격은 block, 의심 경보는 alert, 정상 이벤트는 record
+- 로컬 임시 거부 규칙은 15분 후 만료
+- 기존 ZTNA 판정기 규칙은 변경하지 않음
+- 운영 판정기 자동 연결은 미구현
+
+### 실행 방법
+
+npm run xdr:run -- exfiltration
+
+### 로컬 시험 결과
+
+- block: 10
+- alert: 4
+- record: 16
+- 정상 이벤트 오차단: 0
