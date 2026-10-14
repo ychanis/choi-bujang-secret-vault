@@ -1,0 +1,35 @@
+{
+  "schema": "vault.policy-backup.v1",
+  "version": "stage9-2af611cfa0c2",
+  "sourceCommit": "2af611cfa0c23a4829005c67445641fcc4ba1e96",
+  "files": [
+    {
+      "path": "src/decider.mjs",
+      "sha256": "3df4687595631fd0d499888413490856657e5f4710b69e34b4756bfc9da39852"
+    },
+    {
+      "path": "src/resource-policy.mjs",
+      "sha256": "bb29b415916712f660d3324e5eced754e4fb3ab062032b2eec2e3355e7af4683"
+    },
+    {
+      "path": "src/notes-api.mjs",
+      "sha256": "2e60072dd280dc5b1e0cb42b2a55f12665f3b250f59c065fbb95c97472575283"
+    },
+    {
+      "path": "src/announcements-api.mjs",
+      "sha256": "a02885d7b8bb48ff874be8702c465488abde8256cef8e87b4fa4e042154e04a7"
+    },
+    {
+      "path": "src/api-resource-path.mjs",
+      "sha256": "3c7cc638d46b4f6e3e90a5ae071dc251e4b6057544f63633f06d2e4c0a0b2f13"
+    },
+    {
+      "path": "src/resource-id.mjs",
+      "sha256": "b862e671227c53846cac963cb381b2a73deb50c484f4e44bd9c55a9c41176a84"
+    },
+    {
+      "path": "src/verify-login.mjs",
+      "sha256": "7e642c89438769b850978ce05f18bad1a253cb2f52ba0b1e3792cf78b4204275"
+    }
+  ]
+}

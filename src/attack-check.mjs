@@ -40,5 +40,10 @@ export async function runAttackChecks(config) {
       expected: '학생이 본문 역할을 위조해도 공지 수정 거부',
       observed: '사용자 실제 배포 API 확인: PUT 403, instructor_required' }
   );
+  results.push(
+    {attackId:'stage10_tampered_restore',expected:'B 메모 변조 후 ID·소유자·해시 복원',observed:'미실행: 배포 후 B 새 가상 메모로 확인 필요'},
+    {attackId:'stage10_deleted_restore',expected:'B 메모 삭제 후 같은 한 건 복원',observed:'미실행: 배포 후 B 새 가상 메모로 확인 필요'},
+    {attackId:'stage10_regression',expected:'복구 후 1~9단계 정상·금지 요청 재시험',observed:'로컬 19건 통과. 실제 복구 후 재시험은 미실행; 위 8단계 실제 결과는 이전 배포 기록'}
+  );
   return results;
 }
